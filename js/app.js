@@ -110,89 +110,99 @@ var styles = [
 ];
 
 
-var Location = function(data) {
-    var self = this;
-    this.name = data.name;
-    this.lat = data.lat;
-    this.lng = data.lng;
-    this.address = data.address;
-    this.details = data.details;
-    this.url = "";
-
-    this.visible = ko.observable(true);
-
-    // load wikipedia data
-    var wikiUrl = 'http://en.wikipedia.org/w/api.php?action=opensearch&search=' + data.name + '&format=json&callback=wikiCallback';
-        var wikiRequestTimeout = setTimeout(function(data){
-            $wikiElem.text("failed to get wikipedia resources");
-        }, 8000);
-
-        $.ajax({
-            url: wikiUrl,
-            dataType: "jsonp",
-            jsonp: "callback",
-            success: function(response) {
-                var articleList = response[1];
-
-                for (var i = 0; i < articleList.length; i++) {
-                    articleStr = articleList[i];
-                    var url = 'http://en.wikipedia.org/wiki/' + articleStr;
-                    $wikiElem.append('<li><a href="' + url + '">' + articleStr + '</a></li>');
-                };
-
-                clearTimeout(wikiRequestTimeout);
-            }
-        });
-
-    self.string = '<div class="info-window-content"><div class="title"><b>' + data.name + "</b></div>" +
-        '<div class="address">' + self.address + "</div>" +
-        '<div class="details">' + self.details + "</div></div></div>";
-
-    this.infoWindow = new google.maps.InfoWindow({
-        content: self.string
-    });
-
-    this.marker = new google.maps.Marker({
-        position: new google.maps.LatLng(data.lat, data.lng),
-        map: map,
-        title: data.name,
-        styles: styles
-    });
-
-    this.showMarker = ko.computed(function() {
-        if (this.visible() === true) {
-            this.marker.setMap(map);
-        } else {
-            this.marker.setMap(null);
-        }
-        return true;
-    }, this);
-
-    this.marker.addListener('click', function() {
-
-  	this.string = '<div class="info-window-content"><div class="title"><b>' + data.name + "</b></div>" +
-          '<div class="address">' + self.address + "</div>" +
-          '<div class="details">' + self.details + "</div></div>";
-
-        self.infoWindow.setContent(self.string);
-
-        self.infoWindow.open(map, this);
-
-        self.marker.setAnimation(google.maps.Animation.BOUNCE);
-        setTimeout(function() {
-            self.marker.setAnimation(null);
-        }, 2100);
-    });
-
-    this.bounce = function(space) {
-        google.maps.event.trigger(self.marker, 'click');
-    };
-};
 
 function AppViewModel() {
     var self = this;
 
+    var Location = function(data) {
+        var self = this;
+        this.name = data.name;
+        this.lat = data.lat;
+        this.lng = data.lng;
+        this.address = data.address;
+        this.details = data.details;
+        this.url = "";
+
+        this.visible = ko.observable(true);
+
+        // load wikipedia data
+
+
+        // Wikipedia code ajax request
+        function wikiViewModel () {
+            this.wikiArray = ko.observableArray();
+
+            var wikiUrl = 'http://en.wikipedia.org/w/api.php?action=opensearch&search=' + data.name + '&format=json&callback=wikiCallback';
+            var wikiRequestTimeout = setTimeout(function() {
+              viewModel.wikiError("failed to get Wikipedia resources");
+            },8000);
+
+            $.ajax({
+            url: wikiUrl,
+            dataType: "jsonp",
+            success: function( response) {
+                var articleList = response[1];
+                articleList.forEach(function(articleStr) {
+                    var url = 'http://wikipedia.org/wiki/' + articleStr;
+                    viewModel.wikiArray.push({url: url, article: articleStr});
+                });
+
+                clearTimeout(wikiRequestTimeout);
+            }
+        });
+         ko.applyBindings(new wikiViewModel(), document.getElementById("wiki"));
+        }
+
+
+
+        self.string = '<div class="info-window-content"><div class="title"><b>' + self.name + "</b></div>" +
+            '<div class="address">' + self.address + "</div>" +
+            '<div class="details">' + self.details + "</div></div></div>";
+
+        this.infoWindow = new google.maps.InfoWindow({
+            content: self.string
+        });
+
+        this.marker = new google.maps.Marker({
+            position: new google.maps.LatLng(data.lat, data.lng),
+            map: map,
+            title: data.name,
+            styles: styles
+        });
+
+        this.showMarker = ko.computed(function() {
+            if (this.visible() === true) {
+                this.marker.setMap(map);
+            } else {
+                this.marker.setMap(null);
+            }
+            return true;
+        }, this);
+
+        this.marker.addListener('click', function() {
+
+      	this.string = '<div class="info-window-content"><div class="title"><b>' + self.name + "</b></div>" +
+              '<div class="address">' + self.address + "</div>" +
+              '<div class="details">' + self.details + "</div></div>";
+
+            self.infoWindow.setContent(self.string);
+
+            self.infoWindow.open(map, this);
+
+            self.marker.setAnimation(google.maps.Animation.BOUNCE);
+            setTimeout(function() {
+                self.marker.setAnimation(null);
+            }, 2100);
+        });
+
+        this.bounce = function(space) {
+            google.maps.event.trigger(self.marker, 'click');
+        };
+    };
+
+     //editable data
     this.locationArray = ko.observableArray([]);
+    this.searchItem = ko.observable("");
     this.wikiArray = ko.observableArray([]);
 
 
@@ -202,7 +212,7 @@ function AppViewModel() {
         styles: styles
     });
 
-    this.searchItem = ko.observable("");
+
 
     locations.forEach(function(locationItem) {
         self.locationArray.push(new Location(locationItem));
@@ -230,6 +240,8 @@ function AppViewModel() {
 function initApp() {
     ko.applyBindings(new AppViewModel());
 }
+
+
 
 function mapError() {
     alert("Something happened :(. Please check your connection and try again.");
