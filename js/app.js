@@ -8,37 +8,43 @@ var locations = [{
     lat: 40.7713024,
     lng: -73.9632393,
     address: "432 Park Ave, New York, NY 10022, USA",
-    details: "luxury condominium building is the tallest residential tower in the hemisphere. Immediate occupancy."
+    details: "luxury condominium building is the tallest residential tower in the hemisphere. Immediate occupancy.",
+    category: "park ave"
 }, {
     name: 'Chelsea Loft',
     lat: 40.7444883,
     lng: -73.9949465,
     address: "450 W 17th St Ninth and Tenth Avenue",
-    details: "Set in the Chelsea neighborhood, this air-conditioned apartment is 700 metres from Empire State Building"
+    details: "Set in the Chelsea neighborhood, this air-conditioned apartment is 700 metres from Empire State Building",
+    category: "chelsea"
 }, {
     name: 'Union Square Open Floor Plan',
     lat: 40.7347062,
     lng: -73.9895759,
     address: "Management Suite, 12 First Level Mall, Union Square, Guild Square, Aberdeen AB11 5RG",
-    details: "designed with comfort and convenience in mind, providing plenty of space to unwind, catch up on work or socialize"
+    details: "designed with comfort and convenience in mind, providing plenty of space to unwind, catch up on work or socialize",
+    category: "union square"
 }, {
     name: 'East Village Hip Studio',
     lat: 40.7281777,
     lng: -73.984377,
     address: "27 2nd Ave, New York, NY 10003, USA",
-    details: "Boasting an inexhaustible grid of galleries, bookshops, cafes, and nightlife, the East Village is a laid-back haven in the center of New York City"
+    details: "Boasting an inexhaustible grid of galleries, bookshops, cafes, and nightlife, the East Village is a laid-back haven in the center of New York City",
+    category: "east village"
 }, {
     name: 'TriBeCa Artsy Bachelor Pad',
     lat: 40.7195264,
     lng: -74.0089934,
     address: "51 Long street, Tribeca",
-    details: "Perfect combo of sleek and artsy"
+    details: "Perfect combo of sleek and artsy",
+    category: "tribeca"
 }, {
     name: 'Chinatown Homey Space',
     lat: 40.7180628,
     lng: -73.9961237,
     address: "Broome Street, New York",
-    details: "the perfect homey space in china town for you"
+    details: "the perfect homey space in china town for you",
+    category: "chinatown"
 }];
 
 // create a styles array to use with the map.
@@ -109,51 +115,26 @@ var styles = [
   }
 ];
 
-
-
 function AppViewModel() {
     var self = this;
 
+    this.locationArray = ko.observableArray([]);
+    this.searchItem = ko.observable("");
+    this.wikiArray = ko.observableArray([]);
+    this.wikiError  = ko.observable("");
+
     var Location = function(data) {
         var self = this;
+
         this.name = data.name;
         this.lat = data.lat;
         this.lng = data.lng;
         this.address = data.address;
         this.details = data.details;
+        this.category = data.category;
         this.url = "";
 
         this.visible = ko.observable(true);
-
-        // load wikipedia data
-
-
-        // Wikipedia code ajax request
-        function wikiViewModel () {
-            this.wikiArray = ko.observableArray();
-
-            var wikiUrl = 'http://en.wikipedia.org/w/api.php?action=opensearch&search=' + data.name + '&format=json&callback=wikiCallback';
-            var wikiRequestTimeout = setTimeout(function() {
-              viewModel.wikiError("failed to get Wikipedia resources");
-            },8000);
-
-            $.ajax({
-            url: wikiUrl,
-            dataType: "jsonp",
-            success: function( response) {
-                var articleList = response[1];
-                articleList.forEach(function(articleStr) {
-                    var url = 'http://wikipedia.org/wiki/' + articleStr;
-                    viewModel.wikiArray.push({url: url, article: articleStr});
-                });
-
-                clearTimeout(wikiRequestTimeout);
-            }
-        });
-         ko.applyBindings(new wikiViewModel(), document.getElementById("wiki"));
-        }
-
-
 
         self.string = '<div class="info-window-content"><div class="title"><b>' + self.name + "</b></div>" +
             '<div class="address">' + self.address + "</div>" +
@@ -181,15 +162,19 @@ function AppViewModel() {
 
         this.marker.addListener('click', function() {
 
+
       	this.string = '<div class="info-window-content"><div class="title"><b>' + self.name + "</b></div>" +
-              '<div class="address">' + self.address + "</div>" +
-              '<div class="details">' + self.details + "</div></div>";
+              '<div class="address">' + self.address + "</div>" + '<div class="address">' + self.address + "</div>" + '<div class="details">' + self.details + "</div></div>";
+
+            loadWikiData(self.category);
 
             self.infoWindow.setContent(self.string);
 
             self.infoWindow.open(map, this);
 
             self.marker.setAnimation(google.maps.Animation.BOUNCE);
+
+
             setTimeout(function() {
                 self.marker.setAnimation(null);
             }, 2100);
@@ -200,10 +185,33 @@ function AppViewModel() {
         };
     };
 
-     //editable data
-    this.locationArray = ko.observableArray([]);
-    this.searchItem = ko.observable("");
-    this.wikiArray = ko.observableArray([]);
+    // load wikipedia data
+    function loadWikiData (name) {
+        console.log(name);
+        var encodedName = encodeURIComponent(name);
+        var wikiUrl = 'http://en.wikipedia.org/w/api.php?action=opensearch&search=' + encodedName + '&format=json&callback=wikiCallback';
+        console.log(wikiUrl);
+
+        var wikiRequestTimeout = setTimeout(function() {
+          self.wikiError("failed to get Wikipedia resources");
+        },8000);
+
+        $.ajax({
+          url: wikiUrl,
+          dataType: "jsonp",
+          success: function( response) {
+            console.log(response, 'response from wiki');
+            var articleList = response[1];
+
+            articleList.forEach(function(articleStr) {
+                var url = 'http://wikipedia.org/wiki/' + articleStr;
+                self.wikiArray.push({url: url, article: articleStr});
+            });
+
+            clearTimeout(wikiRequestTimeout);
+          }
+    });
+    }
 
 
     map = new google.maps.Map(document.getElementById('map'), {
@@ -212,21 +220,20 @@ function AppViewModel() {
         styles: styles
     });
 
-
-
     locations.forEach(function(locationItem) {
         self.locationArray.push(new Location(locationItem));
     });
 
     this.finalList = ko.computed(function() {
-        var filter = self.searchItem().toLowerCase();
+        console.log(this, 'this arg');
+        var filter = this.searchItem().toLowerCase();
         if (!filter) {
-            self.locationArray().forEach(function(locationItem) {
+            this.locationArray().forEach(function(locationItem) {
                 locationItem.visible(true);
             });
-            return self.locationArray();
+            return this.locationArray();
         } else {
-            return ko.utils.arrayFilter(self.locationArray(), function(locationItem) {
+            return ko.utils.arrayFilter(this.locationArray(), function(locationItem) {
                 var string = locationItem.name.toLowerCase();
                 var result = (string.search(filter) >= 0);
                 locationItem.visible(result);
@@ -240,8 +247,6 @@ function AppViewModel() {
 function initApp() {
     ko.applyBindings(new AppViewModel());
 }
-
-
 
 function mapError() {
     alert("Something happened :(. Please check your connection and try again.");
