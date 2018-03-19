@@ -191,6 +191,7 @@ function AppViewModel() {
         var encodedName = encodeURIComponent(name);
         var wikiUrl = 'http://en.wikipedia.org/w/api.php?action=opensearch&search=' + encodedName + '&format=json&callback=wikiCallback';
         console.log(wikiUrl);
+        self.wikiArray.removeAll();
 
         var wikiRequestTimeout = setTimeout(function() {
           self.wikiError("failed to get Wikipedia resources");
@@ -200,7 +201,7 @@ function AppViewModel() {
           url: wikiUrl,
           dataType: "jsonp",
           success: function( response) {
-            console.log(response, 'response from wiki');
+            console.log(response, 'respose from wiki');
             var articleList = response[1];
 
             articleList.forEach(function(articleStr) {
