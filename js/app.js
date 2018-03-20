@@ -1,7 +1,12 @@
-"use strict";
+(function () {
+   'use strict';
+   // this function is strict...
+}());
 
 // declaring global variables
 var map;
+var google;
+var ko;
 
 // declaring app data
 var locations = [{
@@ -9,42 +14,36 @@ var locations = [{
     lat: 40.7713024,
     lng: -73.9632393,
     address: "432 Park Ave, New York, NY 10022, USA",
-    details: "luxury condominium building is the tallest residential tower in the hemisphere. Immediate occupancy.",
     category: "park ave"
 }, {
     name: "Chelsea Loft",
     lat: 40.7444883,
     lng: -73.9949465,
     address: "450 W 17th St Ninth and Tenth Avenue",
-    details: "Set in the Chelsea neighborhood, this air-conditioned apartment is 700 metres from Empire State Building",
     category: "chelsea"
 }, {
     name: "Union Square Open Floor Plan",
     lat: 40.7347062,
     lng: -73.9895759,
-    address: "Management Suite, 12 First Level Mall, Union Square, Guild Square, Aberdeen AB11 5RG",
-    details: "designed with comfort and convenience in mind, providing plenty of space to unwind, catch up on work or socialize",
+    address: "Management Suite, 12 First Level Mall",
     category: "union square"
 }, {
     name: "East Village Hip Studio",
     lat: 40.7281777,
     lng: -73.984377,
     address: "27 2nd Ave, New York, NY 10003, USA",
-    details: "Boasting an inexhaustible grid of galleries, bookshops, cafes, and nightlife, the East Village is a laid-back haven in the center of New York City",
     category: "east village"
 }, {
     name: "TriBeCa Artsy Bachelor Pad",
     lat: 40.7195264,
     lng: -74.0089934,
     address: "51 Long street, Tribeca",
-    details: "Perfect combo of sleek and artsy",
     category: "tribeca"
 }, {
     name: "Chinatown Homey Space",
     lat: 40.7180628,
     lng: -73.9961237,
     address: "Broome Street, New York",
-    details: "the perfect homey space in china town for you",
     category: "chinatown"
 }];
 
