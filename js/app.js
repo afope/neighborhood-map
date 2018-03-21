@@ -141,7 +141,7 @@ function AppViewModel() {
 
         self.string = '<div class="info-window-content"><div class="title"><b>' + self.name + "</b></div>" +
             '<div class="address">' + self.address + "</div>" +
-            '<div class="details">' + self.details + "</div></div></div>";
+            '<div class="details">' + self.category + "</div></div></div>";
 
 
         //creates infowindow
@@ -171,7 +171,7 @@ function AppViewModel() {
 
 
         this.string = '<div class="info-window-content"><div class="title"><b>' + self.name + "</b></div>" +
-                    '<div class="address">' + self.address + "</div>" + '<div class="address">' + self.address + "</div>" + '<div class="details">' + self.details + "</div></div>";
+                    '<div class="address">' + self.address + "</div>" + '<div class="address">' + self.address + "</div>" + '<div class="details">' + self.category + "</div></div>";
 
             loadWikiData(self.category);
 
@@ -196,27 +196,32 @@ function AppViewModel() {
     function loadWikiData (name) {
         var encodedName = encodeURIComponent(name);
         var wikiUrl = "http://en.wikipedia.org/w/api.php?action=opensearch&search=" + encodedName + "&format=json&callback=wikiCallback";
+
         self.wikiArray.removeAll();
 
-        var wikiRequestTimeout = setTimeout(function() {
-          self.wikiError("failed to get Wikipedia resources");
-        },8000);
-
-        $.ajax({
+        const request = $.ajax({
           url: wikiUrl,
           dataType: "jsonp",
-          success: function(response) {
-            var articleList = response[1];
+        });
 
-            articleList.forEach(function(articleStr) {
-                var url = "http://wikipedia.org/wiki/" + articleStr;
-                self.wikiArray.push({url: url, article: articleStr});
-            });
+        const onSuccess = (response) => {
+          var articleList = response[1];
 
-            clearTimeout(wikiRequestTimeout);
-          }
-    });
-    }
+          articleList.forEach(function(articleStr) {
+              var url = "http://wikipedia.org/wiki/" + articleStr;
+              self.wikiArray.push({url: url, article: articleStr});
+          });
+        };
+
+        const onError = (error) => {
+          console.log("error in ajax call to wikipedia's api");
+          alert( "Wiki articles not loading, please try again!");
+        };
+
+        request.fail(onError);
+        request.done(onSuccess);
+      }
+
 
     // show google maps
     map = new google.maps.Map(document.getElementById("map"), {
@@ -251,9 +256,4 @@ function AppViewModel() {
 //to run the entire app
 function initApp() {
     ko.applyBindings(new AppViewModel());
-}
-
-// handles map error
-function mapError() {
-    alert("Something happened :(. Please check your connection and try again.");
 }

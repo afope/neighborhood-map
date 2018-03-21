@@ -39,11 +39,15 @@
     <script type="text/javascript" src="js/knockout.js"></script>
     <script type="text/javascript" src="js/app.js"></script>
     <script type="text/javascript" src="js/styles.js"></script>
+    <script type="text/javascript">
+      function mapError() {
+        alert("Maps not loading. Please check your internet connection and try again.");
+      }
+    </script>
+
     <script async defer
         src=
         "https://maps.googleapis.com/maps/api/js?libraries=geometry,drawing&key=AIzaSyBVsM5tkjUGCt_LHUL0k2nhepJ5I0efKg0&v=3&callback=initApp" onerror="mapError()">
-    </script>
-
     </script>
   </body>
 </html>
