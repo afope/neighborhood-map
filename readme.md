@@ -1,4 +1,4 @@
-# neighborthood map
+# neighborhood map
 this application is a single page application which is written in javascript with knockout js, the framework. it lists a set of cool locations on google maps and allows you search through the location and gives more information about certain locations
 
 ## installation
