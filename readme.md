@@ -21,10 +21,10 @@ this application is a single page application which is written in javascript wit
 ### running the code
 
 to run the code run the following commands in your terminal:
-* after you download the codw, open the `index.html` file in your browser
+* after you download the code, open the `index.html` file in your browser
 
 ## contribution
-it's a twitter bot, you can try to implement it too.
+interested in implementation of better design choices. 
 
 ## licensing
 this code follows the [mit license](https://github.com/angular/angular.js/blob/master/LICENSE)
